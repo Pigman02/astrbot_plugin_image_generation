@@ -89,6 +89,12 @@
         "type": "int",
         "default": 3
       },
+      "max_image_size_mb": {
+        "description": "最大图片限制 (MB)",
+        "hint": "允许上传的参考图最大大小，超过此大小的图片将被忽略",
+        "type": "int",
+        "default": 10
+      },
       "default_aspect_ratio": {
         "description": "默认宽高比",
         "hint": "使用命令生图时默认使用的图片宽高比。选择自动时由模型自行决定",

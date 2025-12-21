@@ -279,6 +279,7 @@ class ImageGenerationPlugin(Star):
 
         self.rate_limit_seconds = max(0, gen_cfg.get("rate_limit_seconds", 0))
         self.max_concurrent_tasks = max(1, gen_cfg.get("max_concurrent_tasks", 3))
+        self.max_image_size_mb = max(1, gen_cfg.get("max_image_size_mb", 10))
         self.default_aspect_ratio = gen_cfg.get("default_aspect_ratio", "自动")
         self.default_resolution = gen_cfg.get("default_resolution", "1K")
 
