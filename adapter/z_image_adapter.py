@@ -18,6 +18,9 @@ class ZImageAdapter(BaseImageAdapter):
         if not self.api_keys:
             return GenerationResult(images=None, error="未配置 API Key")
 
+        if request.images:
+            return GenerationResult(images=None, error="Z-Image 适配器目前仅支持文生图，请勿上传图片。")
+
         logger.info(
             f"[ImageGen] Z-Image 开始生成: prompt='{request.prompt[:50]}...', model='{self.model or 'z-image-turbo'}'"
         )
@@ -132,22 +135,6 @@ class ZImageAdapter(BaseImageAdapter):
             "size": size,
             "num_inference_steps": 9,
         }
-
-        # 如果有参考图，使用 ControlNet 模式
-        if request.images:
-            logger.info("[ImageGen] Z-Image 使用 ControlNet 模式 (HED)")
-            image_data = request.images[0]
-            # 确保图像是 base64 编码的字符串，不带 data:image/png;base64, 前缀
-            base64_image = base64.b64encode(image_data.data).decode("utf-8")
-            payload.update(
-                {
-                    "control_image": base64_image,
-                    "control_mode": "HED",
-                    "control_context_scale": 0.75,
-                    "image_scale": 1,
-                    "guidance_scale": 1,
-                }
-            )
 
         return payload
 
