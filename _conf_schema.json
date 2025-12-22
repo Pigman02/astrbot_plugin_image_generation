@@ -125,6 +125,12 @@
           "2K",
           "4K"
         ]
+      },
+      "show_generation_info": {
+        "description": "显示生图信息",
+        "hint": "生图成功后，发送消息展示生图耗时和生成图片数量",
+        "type": "bool",
+        "default": false
       }
     }
   },

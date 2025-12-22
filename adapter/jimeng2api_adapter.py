@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import time
 
 from astrbot.api import logger
 
@@ -51,6 +52,7 @@ class Jimeng2APIAdapter(BaseImageAdapter):
         self, request: GenerationRequest
     ) -> tuple[list[bytes] | None, str | None]:
         """执行单次生图请求。"""
+        start_time = time.time()
         session = self._get_session()
 
         prompt_text = request.prompt
@@ -99,14 +101,19 @@ class Jimeng2APIAdapter(BaseImageAdapter):
                     proxy=self.proxy,
                     timeout=self.timeout,
                 ) as resp:
+                    duration = time.time() - start_time
+                    adapter_name = self.__class__.__name__.replace("Adapter", "")
                     if resp.status != 200:
                         error_text = await resp.text()
                         logger.error(
-                            f"[ImageGen] Jimeng2API Compositions 错误 ({resp.status}): {error_text}"
+                            f"[ImageGen] {adapter_name} Compositions 错误 ({resp.status}, 耗时: {duration:.2f}s): {error_text}"
                         )
                         return None, f"API 错误 ({resp.status})"
 
                     data_json = await resp.json()
+                    logger.info(
+                        f"[ImageGen] {adapter_name} Compositions 成功 (耗时: {duration:.2f}s)"
+                    )
                     return await self._extract_images(data_json)
             else:
                 # 文生图
@@ -133,18 +140,27 @@ class Jimeng2APIAdapter(BaseImageAdapter):
                     proxy=self.proxy,
                     timeout=self.timeout,
                 ) as resp:
+                    duration = time.time() - start_time
+                    adapter_name = self.__class__.__name__.replace("Adapter", "")
                     if resp.status != 200:
                         error_text = await resp.text()
                         logger.error(
-                            f"[ImageGen] Jimeng2API Generations 错误 ({resp.status}): {error_text}"
+                            f"[ImageGen] {adapter_name} Generations 错误 ({resp.status}, 耗时: {duration:.2f}s): {error_text}"
                         )
                         return None, f"API 错误 ({resp.status})"
 
                     data_json = await resp.json()
+                    logger.info(
+                        f"[ImageGen] {adapter_name} Generations 成功 (耗时: {duration:.2f}s)"
+                    )
                     return await self._extract_images(data_json)
 
         except Exception as e:
-            logger.error(f"[ImageGen] Jimeng2API 请求异常: {e}")
+            duration = time.time() - start_time
+            adapter_name = self.__class__.__name__.replace("Adapter", "")
+            logger.error(
+                f"[ImageGen] {adapter_name} 请求异常 (耗时: {duration:.2f}s): {e}"
+            )
             return None, str(e)
 
     async def _extract_images(

@@ -289,6 +289,7 @@ class ImageGenerationPlugin(Star):
         self.max_image_size_mb = max(1, gen_cfg.get("max_image_size_mb", 10))
         self.default_aspect_ratio = gen_cfg.get("default_aspect_ratio", "自动")
         self.default_resolution = gen_cfg.get("default_resolution", "1K")
+        self.show_generation_info = gen_cfg.get("show_generation_info", False)
 
         self.presets = self._load_presets(self.config.get("presets", []))
 
@@ -768,6 +769,7 @@ class ImageGenerationPlugin(Star):
         task_id: str,
     ) -> None:
         """执行生成逻辑并发送结果。"""
+        start_time = time.time()
         result = await self.generator.generate(
             GenerationRequest(
                 prompt=prompt,
@@ -777,13 +779,22 @@ class ImageGenerationPlugin(Star):
                 task_id=task_id,
             )
         )
+        end_time = time.time()
+        duration = end_time - start_time
 
         if result.error:
+            logger.error(
+                f"[ImageGen] 任务 {task_id} 生成失败，耗时: {duration:.2f}s, 错误: {result.error}"
+            )
             await self.context.send_message(
                 unified_msg_origin,
                 MessageChain().message(f"❌ 生成失败: {result.error}"),
             )
             return
+
+        logger.info(
+            f"[ImageGen] 任务 {task_id} 生成成功，耗时: {duration:.2f}s, 图片数量: {len(result.images) if result.images else 0}"
+        )
 
         if not result.images:
             return
@@ -795,6 +806,11 @@ class ImageGenerationPlugin(Star):
                 chain.file_image(file_path)
             except Exception as exc:  # noqa: BLE001
                 logger.error(f"[ImageGen] 保存图片失败: {exc}")
+
+        if self.show_generation_info:
+            chain.message(
+                f"\n✨ 生成成功！\n📊 耗时: {duration:.2f}s\n🖼️ 数量: {len(result.images)}张"
+            )
 
         await self.context.send_message(unified_msg_origin, chain)
 

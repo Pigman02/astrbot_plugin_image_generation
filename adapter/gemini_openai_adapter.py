@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import re
+import time
 from typing import Any
 
 import aiohttp
@@ -112,35 +113,51 @@ class GeminiOpenAIAdapter(BaseImageAdapter):
         task_id: str | None,
     ) -> dict | None:
         """发送 API 请求。"""
+        start_time = time.time()
         url = f"{self.base_url or self.DEFAULT_BASE_URL}/v1/chat/completions"
         api_key = self._get_current_api_key()
         masked_key = api_key[:4] + "****" + api_key[-4:] if len(api_key) > 8 else "****"
         prefix = f"[{task_id}] " if task_id else ""
-        logger.debug(f"[ImageGen] {prefix}OpenAI 请求 -> {url}, key={masked_key}")
+        adapter_name = self.__class__.__name__.replace("Adapter", "")
+        logger.debug(
+            f"[ImageGen] {prefix}{adapter_name} 请求 -> {url}, key={masked_key}"
+        )
 
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
 
-        async with session.post(
-            url,
-            json=payload,
-            headers=headers,
-            timeout=aiohttp.ClientTimeout(total=self.timeout),
-            proxy=self.proxy,
-        ) as response:
-            logger.debug(f"[ImageGen] {prefix}OpenAI 状态 -> {response.status}")
-            if response.status != 200:
-                error_text = await response.text()
-                preview = (
-                    error_text[:200] + "..." if len(error_text) > 200 else error_text
+        try:
+            async with session.post(
+                url,
+                json=payload,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=self.timeout),
+                proxy=self.proxy,
+            ) as response:
+                duration = time.time() - start_time
+                logger.debug(
+                    f"[ImageGen] {prefix}{adapter_name} 状态 -> {response.status} (耗时: {duration:.2f}s)"
                 )
-                logger.error(
-                    f"[ImageGen] {prefix}OpenAI 错误 {response.status}: {preview}"
-                )
-                return None
-            return await response.json()
+                if response.status != 200:
+                    error_text = await response.text()
+                    preview = (
+                        error_text[:200] + "..."
+                        if len(error_text) > 200
+                        else error_text
+                    )
+                    logger.error(
+                        f"[ImageGen] {prefix}{adapter_name} 错误 {response.status} (耗时: {duration:.2f}s): {preview}"
+                    )
+                    return None
+                return await response.json()
+        except Exception as e:
+            duration = time.time() - start_time
+            logger.error(
+                f"[ImageGen] {prefix}{adapter_name} 请求异常 (耗时: {duration:.2f}s): {e}"
+            )
+            return None
 
     async def _download_image_from_url(self, url: str) -> bytes | None:
         """从 URL 下载图像。"""
