@@ -77,11 +77,7 @@ class Jimeng2APIAdapter(BaseImageAdapter):
                 # 使用 multipart/form-data
                 data = aiohttp.FormData()
                 data.add_field("model", self.model or "jimeng-4.5")
-                data.add_field(
-                    "prompt",
-                    prompt_text,
-                    content_type="text/plain; charset=utf-8",
-                )
+                data.add_field("prompt", prompt_text)
                 if request.aspect_ratio:
                     if request.aspect_ratio == "自动":
                         data.add_field("intelligent_ratio", "true")
