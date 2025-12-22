@@ -55,6 +55,15 @@ class Jimeng2APIAdapter(BaseImageAdapter):
         """执行单次生图请求。"""
         session = self._get_session()
 
+        prompt_text = request.prompt
+        if prompt_text is None:
+            return None, "缺少提示词"
+        if not isinstance(prompt_text, str):
+            logger.warning(
+                f"[ImageGen] Jimeng2API prompt 非字符串类型: {type(prompt_text)}"
+            )
+            prompt_text = str(prompt_text)
+
         base_url = self.base_url or "http://localhost:5100"
         headers = {
             "Authorization": f"Bearer {self._get_current_api_key()}",
@@ -68,7 +77,11 @@ class Jimeng2APIAdapter(BaseImageAdapter):
                 # 使用 multipart/form-data
                 data = aiohttp.FormData()
                 data.add_field("model", self.model or "jimeng-4.5")
-                data.add_field("prompt", request.prompt)
+                data.add_field(
+                    "prompt",
+                    prompt_text,
+                    content_type="text/plain; charset=utf-8",
+                )
                 if request.aspect_ratio:
                     if request.aspect_ratio == "自动":
                         data.add_field("intelligent_ratio", "true")
@@ -108,7 +121,7 @@ class Jimeng2APIAdapter(BaseImageAdapter):
 
                 payload = {
                     "model": self.model or "jimeng-4.5",
-                    "prompt": request.prompt,
+                    "prompt": prompt_text,
                     "response_format": "url",  # 默认使用 url，然后下载
                 }
                 if request.aspect_ratio:
