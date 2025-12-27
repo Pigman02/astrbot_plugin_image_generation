@@ -24,7 +24,6 @@ from astrbot.core.utils.io import download_image_by_url
 
 from .core.generator import ImageGenerator
 from .core.task_manager import TaskManager
-from .core.task_manager import TaskManager
 from .core.types import (
     AdapterConfig,
     AdapterType,
@@ -295,7 +294,7 @@ class ImageGenerationPlugin(Star):
                 interval_seconds=12 * 3600,
                 run_immediately=True
             )
-            logger.info("[ImageGen] 已启动即梦 2 自动领积分任务")
+            logger.info("[ImageGen] 已启动即梦2API自动领积分任务")
 
     def _load_usage_data(self):
         """加载用户使用数据。"""
