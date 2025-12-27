@@ -97,9 +97,7 @@ class GeminiAdapter(BaseImageAdapter):
         api_key = self._get_current_api_key()
         masked_key = api_key[:4] + "****" + api_key[-4:] if len(api_key) > 8 else "****"
         prefix = self._get_log_prefix(task_id)
-        logger.debug(
-            f"{prefix} 请求 -> {url}, key={masked_key}"
-        )
+        logger.debug(f"{prefix} 请求 -> {url}, key={masked_key}")
 
         headers = {
             "Content-Type": "application/json",
@@ -132,9 +130,7 @@ class GeminiAdapter(BaseImageAdapter):
                 return await response.json()
         except Exception as e:
             duration = time.time() - start_time
-            logger.error(
-                f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}"
-            )
+            logger.error(f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}")
             return None
 
     def _extract_images(

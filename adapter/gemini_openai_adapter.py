@@ -94,9 +94,7 @@ class GeminiOpenAIAdapter(BaseImageAdapter):
         api_key = self._get_current_api_key()
         masked_key = api_key[:4] + "****" + api_key[-4:] if len(api_key) > 8 else "****"
         prefix = self._get_log_prefix(task_id)
-        logger.debug(
-            f"{prefix} 请求 -> {url}, key={masked_key}"
-        )
+        logger.debug(f"{prefix} 请求 -> {url}, key={masked_key}")
 
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -129,12 +127,12 @@ class GeminiOpenAIAdapter(BaseImageAdapter):
                 return await response.json()
         except Exception as e:
             duration = time.time() - start_time
-            logger.error(
-                f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}"
-            )
+            logger.error(f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}")
             return None
 
-    async def _download_image_from_url(self, url: str, task_id: str | None = None) -> bytes | None:
+    async def _download_image_from_url(
+        self, url: str, task_id: str | None = None
+    ) -> bytes | None:
         """从 URL 下载图像。"""
         prefix = self._get_log_prefix(task_id)
         try:
@@ -209,7 +207,9 @@ class GeminiOpenAIAdapter(BaseImageAdapter):
                         if not image_url:
                             continue
                         if image_url.startswith("http"):
-                            if data := await self._download_image_from_url(image_url, task_id):
+                            if data := await self._download_image_from_url(
+                                image_url, task_id
+                            ):
                                 images.append(data)
                         else:
                             decoded = self._decode_image_url(image_url, task_id)

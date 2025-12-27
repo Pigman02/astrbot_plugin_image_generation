@@ -7,7 +7,11 @@ from typing import Any
 from astrbot.api import logger
 
 from ..core.base_adapter import BaseImageAdapter
-from ..core.constants import GITEE_AI_DEFAULT_BASE_URL, RESOLUTION_1K_MAP, RESOLUTION_2K_MAP
+from ..core.constants import (
+    GITEE_AI_DEFAULT_BASE_URL,
+    RESOLUTION_1K_MAP,
+    RESOLUTION_2K_MAP,
+)
 from ..core.types import GenerationRequest, GenerationResult, ImageCapability
 
 
@@ -76,15 +80,11 @@ class ZImageAdapter(BaseImageAdapter):
                     return None, f"API 错误 ({resp.status})"
 
                 data = await resp.json()
-                logger.info(
-                    f"{prefix} 生成成功 (耗时: {duration:.2f}s)"
-                )
+                logger.info(f"{prefix} 生成成功 (耗时: {duration:.2f}s)")
                 return await self._extract_images(data, request.task_id)
         except Exception as e:
             duration = time.time() - start_time
-            logger.error(
-                f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}"
-            )
+            logger.error(f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}")
             return None, str(e)
 
     def _build_payload(self, request: GenerationRequest) -> dict:
@@ -143,7 +143,9 @@ class ZImageAdapter(BaseImageAdapter):
         logger.info(f"{prefix} 成功提取 {len(images)} 张图像")
         return images, None
 
-    async def _download_image(self, url: str, task_id: str | None = None) -> bytes | None:
+    async def _download_image(
+        self, url: str, task_id: str | None = None
+    ) -> bytes | None:
         """下载图像。"""
         session = self._get_session()
         prefix = self._get_log_prefix(task_id)

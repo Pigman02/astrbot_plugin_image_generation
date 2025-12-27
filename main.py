@@ -92,9 +92,7 @@ class ImageGenerationTool(FunctionTool[AstrAgentContext]):
         prompt = kwargs.get("prompt", "").strip()
         if not prompt:
             return ToolExecResult(
-                summary="未提供提示词",
-                success=False,
-                error="请提供图片生成的提示词"
+                summary="未提供提示词", success=False, error="请提供图片生成的提示词"
             )
 
         plugin = self.plugin
@@ -102,7 +100,7 @@ class ImageGenerationTool(FunctionTool[AstrAgentContext]):
             return ToolExecResult(
                 summary="插件实例缺失",
                 success=False,
-                error="❌ 插件未正确初始化 (Plugin instance missing)"
+                error="❌ 插件未正确初始化 (Plugin instance missing)",
             )
 
         # 获取事件上下文
@@ -121,25 +119,25 @@ class ImageGenerationTool(FunctionTool[AstrAgentContext]):
             return ToolExecResult(
                 summary="无法获取上下文",
                 success=False,
-                error="❌ 无法获取当前消息上下文"
+                error="❌ 无法获取当前消息上下文",
             )
 
         # 检查频率限制和每日限制
         check_result = plugin._check_rate_limit(event.unified_msg_origin)
         if isinstance(check_result, str):
-            logger.warning(f"[ImageGen] 工具调用触发限制: {check_result} (用户: {event.unified_msg_origin})")
-            return ToolExecResult(
-                summary="触发限制",
-                success=False,
-                error=check_result
+            logger.warning(
+                f"[ImageGen] 工具调用触发限制: {check_result} (用户: {event.unified_msg_origin})"
             )
+            return ToolExecResult(summary="触发限制", success=False, error=check_result)
 
         if not plugin.adapter_config or not plugin.adapter_config.api_keys:
-            logger.warning(f"[ImageGen] 工具调用失败: 未配置 API Key (用户: {event.unified_msg_origin})")
+            logger.warning(
+                f"[ImageGen] 工具调用失败: 未配置 API Key (用户: {event.unified_msg_origin})"
+            )
             return ToolExecResult(
                 summary="配置缺失",
                 success=False,
-                error="❌ 未配置 API Key，无法生成图片"
+                error="❌ 未配置 API Key，无法生成图片",
             )
 
         # 工具调用同样支持获取上下文参考图（消息/引用/头像）
@@ -165,7 +163,9 @@ class ImageGenerationTool(FunctionTool[AstrAgentContext]):
                         if ref == "self":
                             user_id = str(event.get_self_id())
                         elif ref == "sender":
-                            user_id = str(event.get_sender_id() or event.unified_msg_origin)
+                            user_id = str(
+                                event.get_sender_id() or event.unified_msg_origin
+                            )
                         else:
                             # 简单的 QQ 号校验（可选）
                             if ref.isdigit():
@@ -175,7 +175,9 @@ class ImageGenerationTool(FunctionTool[AstrAgentContext]):
                             avatar_data = await plugin.get_avatar(user_id)
                             if avatar_data:
                                 images_data.append((avatar_data, "image/jpeg"))
-                                logger.info(f"[ImageGen] 已添加 {user_id} 的头像作为参考图")
+                                logger.info(
+                                    f"[ImageGen] 已添加 {user_id} 的头像作为参考图"
+                                )
         except Exception as e:
             logger.error(f"[ImageGen] 处理参考图失败: {e}", exc_info=True)
             # 参考图处理失败不影响文生图流程，记录日志继续执行
@@ -201,7 +203,7 @@ class ImageGenerationTool(FunctionTool[AstrAgentContext]):
         return ToolExecResult(
             summary=f"已启动{mode}任务",
             success=True,
-            data={"task_id": task_id, "mode": mode}
+            data={"task_id": task_id, "mode": mode},
         )
 
 
@@ -273,7 +275,7 @@ class ImageGenerationPlugin(Star):
             name="cache_cleanup",
             coro_func=self._cleanup_cache,
             interval_seconds=self.cleanup_interval_hours * 3600,
-            run_immediately=True
+            run_immediately=True,
         )
 
         # 2. Jimeng2API 自动领积分任务
@@ -289,7 +291,7 @@ class ImageGenerationPlugin(Star):
                 name="jimeng_token_receive",
                 coro_func=self.generator.adapter.receive_token,
                 interval_seconds=12 * 3600,
-                run_immediately=True
+                run_immediately=True,
             )
             logger.info("[ImageGen] 已启动即梦2API自动领积分任务")
 
@@ -351,7 +353,9 @@ class ImageGenerationPlugin(Star):
                     deleted_count += 1
                 except OSError as e:
                     logger.debug(f"[ImageGen] 删除缓存文件失败: {path} - {e}")
-            logger.info(f"[ImageGen] 已清理 {deleted_count}/{len(to_delete)} 个旧缓存文件 (按数量)")
+            logger.info(
+                f"[ImageGen] 已清理 {deleted_count}/{len(to_delete)} 个旧缓存文件 (按数量)"
+            )
 
     def _adjust_tool_parameters(self, tool: ImageGenerationTool):
         """根据适配器能力动态调整工具参数。"""
@@ -457,7 +461,9 @@ class ImageGenerationPlugin(Star):
                         current_model = target_model
                         break
             except ValueError:
-                logger.warning(f"[ImageGen] 模型设置格式错误: {model_setting}，期望格式为 '供应商/模型'")
+                logger.warning(
+                    f"[ImageGen] 模型设置格式错误: {model_setting}，期望格式为 '供应商/模型'"
+                )
 
         # 如果没匹配到（或者没设置），取第一个可用的
         if not matched_config and all_provider_configs:

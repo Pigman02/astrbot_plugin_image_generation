@@ -60,7 +60,9 @@ class BaseImageAdapter(abc.ABC):
         """轮换 API Key。"""
         if len(self.api_keys) > 1:
             self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
-            logger.info(f"{self._get_log_prefix()} 轮换 API Key -> 索引 {self.current_key_index}")
+            logger.info(
+                f"{self._get_log_prefix()} 轮换 API Key -> 索引 {self.current_key_index}"
+            )
 
     def update_model(self, model: str) -> None:
         """更新使用的模型。"""
@@ -68,7 +70,7 @@ class BaseImageAdapter(abc.ABC):
 
     async def generate(self, request: GenerationRequest) -> GenerationResult:
         """带重试逻辑的图像生成模板方法。
-        
+
         子类应重写 `_generate_once()` 方法来实现具体的生成逻辑。
         如需在生成前进行预处理验证，可重写 `_pre_generate()` 方法。
         """
@@ -104,7 +106,7 @@ class BaseImageAdapter(abc.ABC):
 
     def _pre_generate(self, request: GenerationRequest) -> GenerationResult | None:
         """生成前的预处理检查。
-        
+
         子类可重写此方法进行参数验证。
         返回 None 表示通过检查，返回 GenerationResult 表示提前返回错误。
         """
@@ -115,7 +117,7 @@ class BaseImageAdapter(abc.ABC):
         self, request: GenerationRequest
     ) -> tuple[list[bytes] | None, str | None]:
         """执行单次生成请求。
-        
+
         子类必须实现此方法。
         返回 (images, error) 元组，成功时 images 非空，失败时 error 非空。
         """

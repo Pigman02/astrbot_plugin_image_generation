@@ -15,7 +15,9 @@ class TaskManager:
         self.background_tasks: set[asyncio.Task] = set()
         self._loop_tasks: dict[str, asyncio.Task] = {}
 
-    def create_task(self, coro: Coroutine[Any, Any, Any], name: str | None = None) -> asyncio.Task:
+    def create_task(
+        self, coro: Coroutine[Any, Any, Any], name: str | None = None
+    ) -> asyncio.Task:
         """创建一个普通的后台任务。"""
         task = asyncio.create_task(coro)
         if name:
@@ -47,7 +49,10 @@ class TaskManager:
                 try:
                     await coro_func()
                 except Exception as e:
-                    logger.error(f"[ImageGen] [TaskManager] 定时任务 {name} 初始执行失败: {e}", exc_info=True)
+                    logger.error(
+                        f"[ImageGen] [TaskManager] 定时任务 {name} 初始执行失败: {e}",
+                        exc_info=True,
+                    )
 
             while True:
                 try:
@@ -56,13 +61,18 @@ class TaskManager:
                 except asyncio.CancelledError:
                     break
                 except Exception as e:
-                    logger.error(f"[ImageGen] [TaskManager] 定时任务 {name} 执行出错: {e}", exc_info=True)
+                    logger.error(
+                        f"[ImageGen] [TaskManager] 定时任务 {name} 执行出错: {e}",
+                        exc_info=True,
+                    )
 
         task = asyncio.create_task(_loop(), name=f"loop_{name}")
         self._loop_tasks[name] = task
         self.background_tasks.add(task)
         task.add_done_callback(functools.partial(self._on_loop_task_done, name))
-        logger.info(f"[ImageGen] [TaskManager] 定时任务 {name} 已启动 (间隔: {interval_seconds}s)")
+        logger.info(
+            f"[ImageGen] [TaskManager] 定时任务 {name} 已启动 (间隔: {interval_seconds}s)"
+        )
 
     def stop_loop_task(self, name: str) -> None:
         """停止指定的定时任务。"""

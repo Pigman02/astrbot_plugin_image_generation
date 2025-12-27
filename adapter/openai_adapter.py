@@ -61,15 +61,11 @@ class OpenAIAdapter(BaseImageAdapter):
                     return None, f"API 错误 ({resp.status})"
 
                 data = await resp.json()
-                logger.info(
-                    f"{prefix} 生成成功 (耗时: {duration:.2f}s)"
-                )
+                logger.info(f"{prefix} 生成成功 (耗时: {duration:.2f}s)")
                 return await self._extract_images(data)
         except Exception as e:
             duration = time.time() - start_time
-            logger.error(
-                f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}"
-            )
+            logger.error(f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}")
             return None, str(e)
 
     def _build_payload(self, request: GenerationRequest) -> dict:

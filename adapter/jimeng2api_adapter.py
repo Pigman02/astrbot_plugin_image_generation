@@ -7,7 +7,7 @@ from typing import Any
 from astrbot.api import logger
 
 from ..core.base_adapter import BaseImageAdapter
-from ..core.types import GenerationRequest, GenerationResult, ImageCapability
+from ..core.types import GenerationRequest, ImageCapability
 
 
 class Jimeng2APIAdapter(BaseImageAdapter):
@@ -36,9 +36,7 @@ class Jimeng2APIAdapter(BaseImageAdapter):
         if prompt_text is None:
             return None, "缺少提示词"
         if not isinstance(prompt_text, str):
-            logger.warning(
-                f"{prefix} prompt 非字符串类型: {type(prompt_text)}"
-            )
+            logger.warning(f"{prefix} prompt 非字符串类型: {type(prompt_text)}")
             prompt_text = str(prompt_text)
 
         base_url = self.base_url or "http://localhost:5100"
@@ -88,9 +86,7 @@ class Jimeng2APIAdapter(BaseImageAdapter):
 
                     data_json = await resp.json()
                     logger.debug(f"{prefix} Compositions 响应: {data_json}")
-                    logger.info(
-                        f"{prefix} Compositions 成功 (耗时: {duration:.2f}s)"
-                    )
+                    logger.info(f"{prefix} Compositions 成功 (耗时: {duration:.2f}s)")
                     return await self._extract_images(data_json, request.task_id)
             else:
                 # 文生图
@@ -127,16 +123,12 @@ class Jimeng2APIAdapter(BaseImageAdapter):
 
                     data_json = await resp.json()
                     logger.debug(f"{prefix} Generations 响应: {data_json}")
-                    logger.info(
-                        f"{prefix} Generations 成功 (耗时: {duration:.2f}s)"
-                    )
+                    logger.info(f"{prefix} Generations 成功 (耗时: {duration:.2f}s)")
                     return await self._extract_images(data_json, request.task_id)
 
         except Exception as e:
             duration = time.time() - start_time
-            logger.error(
-                f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}"
-            )
+            logger.error(f"{prefix} 请求异常 (耗时: {duration:.2f}s): {e}")
             return None, str(e)
 
     async def _extract_images(
@@ -164,7 +156,9 @@ class Jimeng2APIAdapter(BaseImageAdapter):
                     if resp.status == 200:
                         images.append(await resp.read())
                     else:
-                        logger.error(f"{prefix} 下载图像失败 ({resp.status}): {item['url']}")
+                        logger.error(
+                            f"{prefix} 下载图像失败 ({resp.status}): {item['url']}"
+                        )
 
         if not images:
             return None, "未找到有效的图片数据"
@@ -193,16 +187,19 @@ class Jimeng2APIAdapter(BaseImageAdapter):
                 ) as resp:
                     resp_json = await resp.json()
                     status_code = resp.status
-                    results[f"key_{i}"] = {
-                        "status": status_code,
-                        "data": resp_json
-                    }
+                    results[f"key_{i}"] = {"status": status_code, "data": resp_json}
                     if status_code == 200:
-                        logger.info(f"{self._get_log_prefix()} API Key (索引 {i}) 积分领取成功: {resp_json}")
+                        logger.info(
+                            f"{self._get_log_prefix()} API Key (索引 {i}) 积分领取成功: {resp_json}"
+                        )
                     else:
-                        logger.warning(f"{self._get_log_prefix()} API Key (索引 {i}) 积分领取失败 ({status_code}): {resp_json}")
+                        logger.warning(
+                            f"{self._get_log_prefix()} API Key (索引 {i}) 积分领取失败 ({status_code}): {resp_json}"
+                        )
             except Exception as e:
-                logger.error(f"{self._get_log_prefix()} API Key (索引 {i}) 积分领取请求异常: {e}")
+                logger.error(
+                    f"{self._get_log_prefix()} API Key (索引 {i}) 积分领取请求异常: {e}"
+                )
                 results[f"key_{i}"] = {"error": str(e)}
 
         return results
