@@ -110,24 +110,35 @@ class ImageGenerationPlugin(Star):
         该任务会：
         1. 在插件启动时执行一次（通过启动任务）
         2. 每天日期变更时自动执行（通过每日任务）
+
+        注意：只要配置中包含即梦渠道，就会启用该任务，
+        无论当前使用的是哪个渠道。
         """
         from .adapter.jimeng2api_adapter import Jimeng2APIAdapter
+        from .core.types import AdapterType
 
-        if self.generator and isinstance(self.generator.adapter, Jimeng2APIAdapter):
-            # 1. 注册为启动任务，插件启动时执行一次
-            self.task_manager.register_startup_task(
-                name="jimeng_token_receive",
-                coro_func=self.generator.adapter.receive_token,
-            )
+        # 检查配置中是否包含即梦渠道（而非检查当前适配器）
+        jimeng_config = self.config_manager.get_provider_config(AdapterType.JIMENG2API)
+        if not jimeng_config:
+            return
 
-            # 2. 注册为每日任务，日期变更时执行
-            self.task_manager.start_daily_task(
-                name="jimeng_token_receive",
-                coro_func=self.generator.adapter.receive_token,
-                check_interval_seconds=300,  # 每5分钟检查一次日期变更
-                run_immediately=False,  # 启动任务已处理，无需重复执行
-            )
-            logger.info("[ImageGen] 已配置即梦2API自动领积分任务（启动时+每日）")
+        # 创建专门用于任务的即梦适配器实例
+        jimeng_adapter = Jimeng2APIAdapter(jimeng_config)
+
+        # 1. 注册为启动任务，插件启动时执行一次
+        self.task_manager.register_startup_task(
+            name="jimeng_token_receive",
+            coro_func=jimeng_adapter.receive_token,
+        )
+
+        # 2. 注册为每日任务，日期变更时执行
+        self.task_manager.start_daily_task(
+            name="jimeng_token_receive",
+            coro_func=jimeng_adapter.receive_token,
+            check_interval_seconds=300,  # 每5分钟检查一次日期变更
+            run_immediately=False,  # 启动任务已处理，无需重复执行
+        )
+        logger.info("[ImageGen] 已配置即梦2API自动领积分任务（启动时+每日）")
 
     def _adjust_tool_parameters(self, tool: ImageGenerationTool) -> None:
         """根据适配器能力动态调整工具参数。"""

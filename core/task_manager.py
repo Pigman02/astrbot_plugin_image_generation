@@ -161,7 +161,9 @@ class TaskManager:
                 try:
                     await coro_func()
                     self._last_run_dates[name] = datetime.now().strftime("%Y-%m-%d")
-                    logger.info(f"[ImageGen] [TaskManager] 每日任务 {name} 初始执行完成")
+                    logger.info(
+                        f"[ImageGen] [TaskManager] 每日任务 {name} 初始执行完成"
+                    )
                 except Exception as e:
                     logger.error(
                         f"[ImageGen] [TaskManager] 每日任务 {name} 初始执行失败: {e}",

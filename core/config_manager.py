@@ -60,6 +60,7 @@ class ConfigManager:
     def __init__(self, config: AstrBotConfig | None):
         self._config = config or AstrBotConfig()
         self._plugin_config: PluginConfig = PluginConfig()
+        self._all_provider_configs: list[AdapterConfig] = []  # 保存所有供应商配置
         self.load()
 
     def load(self) -> PluginConfig:
@@ -105,6 +106,9 @@ class ConfigManager:
                     max_retry_attempts=gen_cfg.get("max_retry_attempts", 3),
                 )
             )
+
+        # 保存所有供应商配置供后续使用
+        self._all_provider_configs = all_provider_configs
 
         # 2. 获取当前选择的模型
         model_setting = gen_cfg.get("model", "")
@@ -281,3 +285,29 @@ class ConfigManager:
     def cache_settings(self) -> CacheSettings:
         """缓存设置。"""
         return self._plugin_config.cache_settings
+
+    # ---------------------- 供应商查询方法 ----------------------
+    def has_provider_type(self, adapter_type: AdapterType) -> bool:
+        """检查配置中是否包含指定类型的供应商。
+
+        Args:
+            adapter_type: 要检查的适配器类型。
+
+        Returns:
+            如果配置中包含该类型的供应商则返回 True，否则返回 False。
+        """
+        return any(cfg.type == adapter_type for cfg in self._all_provider_configs)
+
+    def get_provider_config(self, adapter_type: AdapterType) -> AdapterConfig | None:
+        """获取指定类型的供应商配置。
+
+        Args:
+            adapter_type: 要获取的适配器类型。
+
+        Returns:
+            匹配的供应商配置，如果没有则返回 None。
+        """
+        for cfg in self._all_provider_configs:
+            if cfg.type == adapter_type:
+                return cfg
+        return None
