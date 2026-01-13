@@ -239,6 +239,7 @@ class ImageGenerationPlugin(Star):
         """执行生成逻辑并发送结果。"""
         start_time = time.time()
         if not self.generator:
+            logger.warning("[ImageGen] 生成器未初始化，跳过生成请求")
             return
         result = await self.generator.generate(
             GenerationRequest(
