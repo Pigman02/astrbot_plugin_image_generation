@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import base64
@@ -76,7 +77,10 @@ class GeminiAdapter(BaseImageAdapter):
             )
 
         payload: dict = {
-            "contents": [{"parts": parts}],
+            "contents": [{
+                "role": "user",  # 修复：添加 role 字段
+                "parts": parts
+            }],
             "generationConfig": generation_config,
         }
 
